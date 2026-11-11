@@ -1,0 +1,140 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum UserRole {
+  STUDENT
+  MENTOR
+  ADMIN
+}
+
+enum AssignmentStatus {
+  PENDING
+  ACCEPTED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum PermissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id             Int             @id @default(autoincrement())
+  fullName       String
+  email          String          @unique
+  passwordHash   String
+  role           UserRole
+  photoUrl       String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  student        Student?
+  mentor         Mentor?
+  classSchedules ClassSchedule[]
+  notifications  Notification[]
+}
+
+model Student {
+  id           Int          @id @default(autoincrement())
+  userId       Int          @unique
+  studentCode  String?      @unique
+  department   String?
+  supportNeeds String?      @db.Text
+
+  user         User         @relation(fields: [userId], references: [id])
+  assignments  Assignment[]
+}
+
+model Mentor {
+  id           Int          @id @default(autoincrement())
+  userId       Int          @unique
+  studentCode  String?      @unique
+  department   String?
+  skills       String?      @db.Text
+
+  user         User         @relation(fields: [userId], references: [id])
+  assignments  Assignment[]
+  permissions  Permission[]
+}
+
+model ClassSchedule {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  courseName  String
+  dayOfWeek   Int
+  startTime   String
+  endTime     String
+  location    String?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, dayOfWeek])
+}
+
+model Assignment {
+  id              Int              @id @default(autoincrement())
+  studentId       Int
+  mentorId        Int
+  startAt         DateTime
+  endAt           DateTime
+  location        String?
+  status          AssignmentStatus @default(PENDING)
+  mentorAcceptedAt DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  student         Student          @relation(fields: [studentId], references: [id])
+  mentor          Mentor           @relation(fields: [mentorId], references: [id])
+  permissions     Permission[]
+  attendance      Attendance?
+
+  @@index([studentId, startAt])
+  @@index([mentorId, startAt])
+}
+
+model Permission {
+  id           Int              @id @default(autoincrement())
+  mentorId     Int
+  assignmentId Int?
+  reason       String           @db.Text
+  startAt      DateTime
+  endAt        DateTime
+  status       PermissionStatus @default(PENDING)
+  createdAt    DateTime         @default(now())
+
+  mentor       Mentor           @relation(fields: [mentorId], references: [id])
+  assignment   Assignment?      @relation(fields: [assignmentId], references: [id])
+}
+
+model Attendance {
+  id           Int        @id @default(autoincrement())
+  assignmentId Int        @unique
+  confirmedAt  DateTime   @default(now())
+  notes        String?    @db.Text
+
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+}
+
+model Notification {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  title     String
+  body      String    @db.Text
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, readAt])
+}
