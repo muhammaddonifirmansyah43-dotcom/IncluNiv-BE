@@ -32,6 +32,7 @@ model User {
   id             Int             @id @default(autoincrement())
   fullName       String
   email          String          @unique
+  phoneNumber    String?
   passwordHash   String
   role           UserRole
   photoUrl       String?
@@ -49,6 +50,7 @@ model Student {
   userId       Int          @unique
   studentCode  String?      @unique
   department   String?
+  disabilityType String?
   supportNeeds String?      @db.Text
 
   user         User         @relation(fields: [userId], references: [id])
@@ -138,4 +140,3 @@ model Notification {
 
   @@index([userId, readAt])
 }
-=
