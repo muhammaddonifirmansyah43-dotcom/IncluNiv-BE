@@ -41,6 +41,7 @@ export type StudentMinAggregateOutputType = {
   userId: number | null
   studentCode: string | null
   department: string | null
+  disabilityType: string | null
   supportNeeds: string | null
 }
 
@@ -49,6 +50,7 @@ export type StudentMaxAggregateOutputType = {
   userId: number | null
   studentCode: string | null
   department: string | null
+  disabilityType: string | null
   supportNeeds: string | null
 }
 
@@ -57,6 +59,7 @@ export type StudentCountAggregateOutputType = {
   userId: number
   studentCode: number
   department: number
+  disabilityType: number
   supportNeeds: number
   _all: number
 }
@@ -77,6 +80,7 @@ export type StudentMinAggregateInputType = {
   userId?: true
   studentCode?: true
   department?: true
+  disabilityType?: true
   supportNeeds?: true
 }
 
@@ -85,6 +89,7 @@ export type StudentMaxAggregateInputType = {
   userId?: true
   studentCode?: true
   department?: true
+  disabilityType?: true
   supportNeeds?: true
 }
 
@@ -93,6 +98,7 @@ export type StudentCountAggregateInputType = {
   userId?: true
   studentCode?: true
   department?: true
+  disabilityType?: true
   supportNeeds?: true
   _all?: true
 }
@@ -188,6 +194,7 @@ export type StudentGroupByOutputType = {
   userId: number
   studentCode: string | null
   department: string | null
+  disabilityType: string | null
   supportNeeds: string | null
   _count: StudentCountAggregateOutputType | null
   _avg: StudentAvgAggregateOutputType | null
@@ -219,6 +226,7 @@ export type StudentWhereInput = {
   userId?: Prisma.IntFilter<"Student"> | number
   studentCode?: Prisma.StringNullableFilter<"Student"> | string | null
   department?: Prisma.StringNullableFilter<"Student"> | string | null
+  disabilityType?: Prisma.StringNullableFilter<"Student"> | string | null
   supportNeeds?: Prisma.StringNullableFilter<"Student"> | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   assignments?: Prisma.AssignmentListRelationFilter
@@ -229,6 +237,7 @@ export type StudentOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   studentCode?: Prisma.SortOrderInput | Prisma.SortOrder
   department?: Prisma.SortOrderInput | Prisma.SortOrder
+  disabilityType?: Prisma.SortOrderInput | Prisma.SortOrder
   supportNeeds?: Prisma.SortOrderInput | Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   assignments?: Prisma.AssignmentOrderByRelationAggregateInput
@@ -243,6 +252,7 @@ export type StudentWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.StudentWhereInput[]
   NOT?: Prisma.StudentWhereInput | Prisma.StudentWhereInput[]
   department?: Prisma.StringNullableFilter<"Student"> | string | null
+  disabilityType?: Prisma.StringNullableFilter<"Student"> | string | null
   supportNeeds?: Prisma.StringNullableFilter<"Student"> | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   assignments?: Prisma.AssignmentListRelationFilter
@@ -253,6 +263,7 @@ export type StudentOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   studentCode?: Prisma.SortOrderInput | Prisma.SortOrder
   department?: Prisma.SortOrderInput | Prisma.SortOrder
+  disabilityType?: Prisma.SortOrderInput | Prisma.SortOrder
   supportNeeds?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.StudentCountOrderByAggregateInput
   _avg?: Prisma.StudentAvgOrderByAggregateInput
@@ -269,12 +280,14 @@ export type StudentScalarWhereWithAggregatesInput = {
   userId?: Prisma.IntWithAggregatesFilter<"Student"> | number
   studentCode?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
   department?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
+  disabilityType?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
   supportNeeds?: Prisma.StringNullableWithAggregatesFilter<"Student"> | string | null
 }
 
 export type StudentCreateInput = {
   studentCode?: string | null
   department?: string | null
+  disabilityType?: string | null
   supportNeeds?: string | null
   user: Prisma.UserCreateNestedOneWithoutStudentInput
   assignments?: Prisma.AssignmentCreateNestedManyWithoutStudentInput
@@ -285,6 +298,7 @@ export type StudentUncheckedCreateInput = {
   userId: number
   studentCode?: string | null
   department?: string | null
+  disabilityType?: string | null
   supportNeeds?: string | null
   assignments?: Prisma.AssignmentUncheckedCreateNestedManyWithoutStudentInput
 }
@@ -292,6 +306,7 @@ export type StudentUncheckedCreateInput = {
 export type StudentUpdateInput = {
   studentCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabilityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supportNeeds?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutStudentNestedInput
   assignments?: Prisma.AssignmentUpdateManyWithoutStudentNestedInput
@@ -302,6 +317,7 @@ export type StudentUncheckedUpdateInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   studentCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabilityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supportNeeds?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assignments?: Prisma.AssignmentUncheckedUpdateManyWithoutStudentNestedInput
 }
@@ -311,12 +327,14 @@ export type StudentCreateManyInput = {
   userId: number
   studentCode?: string | null
   department?: string | null
+  disabilityType?: string | null
   supportNeeds?: string | null
 }
 
 export type StudentUpdateManyMutationInput = {
   studentCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabilityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supportNeeds?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -325,6 +343,7 @@ export type StudentUncheckedUpdateManyInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   studentCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabilityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supportNeeds?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -344,6 +363,7 @@ export type StudentCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   studentCode?: Prisma.SortOrder
   department?: Prisma.SortOrder
+  disabilityType?: Prisma.SortOrder
   supportNeeds?: Prisma.SortOrder
 }
 
@@ -357,6 +377,7 @@ export type StudentMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   studentCode?: Prisma.SortOrder
   department?: Prisma.SortOrder
+  disabilityType?: Prisma.SortOrder
   supportNeeds?: Prisma.SortOrder
 }
 
@@ -365,6 +386,7 @@ export type StudentMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   studentCode?: Prisma.SortOrder
   department?: Prisma.SortOrder
+  disabilityType?: Prisma.SortOrder
   supportNeeds?: Prisma.SortOrder
 }
 
@@ -427,6 +449,7 @@ export type StudentUpdateOneRequiredWithoutAssignmentsNestedInput = {
 export type StudentCreateWithoutUserInput = {
   studentCode?: string | null
   department?: string | null
+  disabilityType?: string | null
   supportNeeds?: string | null
   assignments?: Prisma.AssignmentCreateNestedManyWithoutStudentInput
 }
@@ -435,6 +458,7 @@ export type StudentUncheckedCreateWithoutUserInput = {
   id?: number
   studentCode?: string | null
   department?: string | null
+  disabilityType?: string | null
   supportNeeds?: string | null
   assignments?: Prisma.AssignmentUncheckedCreateNestedManyWithoutStudentInput
 }
@@ -458,6 +482,7 @@ export type StudentUpdateToOneWithWhereWithoutUserInput = {
 export type StudentUpdateWithoutUserInput = {
   studentCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabilityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supportNeeds?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assignments?: Prisma.AssignmentUpdateManyWithoutStudentNestedInput
 }
@@ -466,6 +491,7 @@ export type StudentUncheckedUpdateWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   studentCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabilityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supportNeeds?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assignments?: Prisma.AssignmentUncheckedUpdateManyWithoutStudentNestedInput
 }
@@ -473,6 +499,7 @@ export type StudentUncheckedUpdateWithoutUserInput = {
 export type StudentCreateWithoutAssignmentsInput = {
   studentCode?: string | null
   department?: string | null
+  disabilityType?: string | null
   supportNeeds?: string | null
   user: Prisma.UserCreateNestedOneWithoutStudentInput
 }
@@ -482,6 +509,7 @@ export type StudentUncheckedCreateWithoutAssignmentsInput = {
   userId: number
   studentCode?: string | null
   department?: string | null
+  disabilityType?: string | null
   supportNeeds?: string | null
 }
 
@@ -504,6 +532,7 @@ export type StudentUpdateToOneWithWhereWithoutAssignmentsInput = {
 export type StudentUpdateWithoutAssignmentsInput = {
   studentCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabilityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supportNeeds?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutStudentNestedInput
 }
@@ -513,6 +542,7 @@ export type StudentUncheckedUpdateWithoutAssignmentsInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   studentCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabilityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   supportNeeds?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -552,6 +582,7 @@ export type StudentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   userId?: boolean
   studentCode?: boolean
   department?: boolean
+  disabilityType?: boolean
   supportNeeds?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   assignments?: boolean | Prisma.Student$assignmentsArgs<ExtArgs>
@@ -565,10 +596,11 @@ export type StudentSelectScalar = {
   userId?: boolean
   studentCode?: boolean
   department?: boolean
+  disabilityType?: boolean
   supportNeeds?: boolean
 }
 
-export type StudentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "studentCode" | "department" | "supportNeeds", ExtArgs["result"]["student"]>
+export type StudentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "studentCode" | "department" | "disabilityType" | "supportNeeds", ExtArgs["result"]["student"]>
 export type StudentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   assignments?: boolean | Prisma.Student$assignmentsArgs<ExtArgs>
@@ -586,6 +618,7 @@ export type $StudentPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     userId: number
     studentCode: string | null
     department: string | null
+    disabilityType: string | null
     supportNeeds: string | null
   }, ExtArgs["result"]["student"]>
   composites: {}
@@ -962,6 +995,7 @@ export interface StudentFieldRefs {
   readonly userId: Prisma.FieldRef<"Student", 'Int'>
   readonly studentCode: Prisma.FieldRef<"Student", 'String'>
   readonly department: Prisma.FieldRef<"Student", 'String'>
+  readonly disabilityType: Prisma.FieldRef<"Student", 'String'>
   readonly supportNeeds: Prisma.FieldRef<"Student", 'String'>
 }
     
