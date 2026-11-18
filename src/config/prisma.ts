@@ -1,15 +1,23 @@
-import "dotenv/config";
-import { PrismaClient } from "../generated/prisma/client";
-import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 
+import "dotenv/config";
+
+import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+import { PrismaClient } from "../generated/prisma/client";
+
+// Konfigurasi koneksi database MySQL
 const adapter = new PrismaMariaDb({
-  host: process.env.DATABASE_HOST,
-  port: Number(process.env.DATABASE_PORT),
-  user: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_NAME,
+  host: process.env.DATABASE_HOST || "localhost",
+  port: Number(process.env.DATABASE_PORT || 3306),
+  user: process.env.DATABASE_USER || "root",
+  password: process.env.DATABASE_PASSWORD || "",
+  database: process.env.DATABASE_NAME || "incluniv_db",
+  connectionLimit: 5,
 });
 
-const prisma = new PrismaClient({ adapter });
+// Satu instance Prisma Client untuk seluruh backend
+export const prisma = new PrismaClient({
+  adapter,
+});
 
+// Mendukung modul yang memakai default import
 export default prisma;
