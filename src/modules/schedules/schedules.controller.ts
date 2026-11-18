@@ -1,5 +1,4 @@
-﻿
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 
 import {
   createSchedule,
@@ -9,13 +8,13 @@ import {
 } from "./schedules.service";
 
 function getScheduleId(value: string | string[]): number | null {
-  if (Array.isArray(value)) {
+  if (Array.isArray(value) || !/^[1-9]\d*$/.test(value)) {
     return null;
   }
 
   const id = Number(value);
 
-  if (!Number.isInteger(id) || id <= 0) {
+  if (!Number.isSafeInteger(id)) {
     return null;
   }
 
@@ -27,6 +26,13 @@ export async function createScheduleController(
   res: Response
 ) {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Autentikasi diperlukan",
+      });
+    }
+
     const { courseName, dayOfWeek, startTime, endTime, location } = req.body;
 
     if (
@@ -44,7 +50,7 @@ export async function createScheduleController(
       });
     }
 
-    const schedule = await createSchedule(req.user!.userId, {
+    const schedule = await createSchedule(req.user.userId, {
       courseName,
       dayOfWeek,
       startTime,
@@ -61,7 +67,8 @@ export async function createScheduleController(
     const message =
       error instanceof Error ? error.message : "Terjadi kesalahan";
 
-    const status = message.includes("bertabrakan") ? 409 : 400;
+    const status =
+      message.includes("bertabrakan") ? 409 : 400;
 
     return res.status(status).json({
       success: false,
@@ -75,14 +82,23 @@ export async function getMySchedulesController(
   res: Response
 ) {
   try {
-    const schedules = await getMySchedules(req.user!.userId);
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Autentikasi diperlukan",
+      });
+    }
+
+    const schedules = await getMySchedules(req.user.userId);
 
     return res.status(200).json({
       success: true,
       message: "Jadwal kuliah berhasil diambil",
       data: schedules,
     });
-  } catch {
+  } catch (error) {
+    console.error("Get my schedules error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Gagal mengambil jadwal kuliah",
@@ -95,6 +111,13 @@ export async function updateScheduleController(
   res: Response
 ) {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Autentikasi diperlukan",
+      });
+    }
+
     const scheduleId = getScheduleId(req.params.id);
 
     if (scheduleId === null) {
@@ -123,7 +146,7 @@ export async function updateScheduleController(
 
     const schedule = await updateSchedule(
       scheduleId,
-      req.user!.userId,
+      req.user.userId,
       { courseName, dayOfWeek, startTime, endTime, location }
     );
 
@@ -154,6 +177,13 @@ export async function deleteScheduleController(
   res: Response
 ) {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Autentikasi diperlukan",
+      });
+    }
+
     const scheduleId = getScheduleId(req.params.id);
 
     if (scheduleId === null) {
@@ -163,7 +193,7 @@ export async function deleteScheduleController(
       });
     }
 
-    await deleteSchedule(scheduleId, req.user!.userId);
+    await deleteSchedule(scheduleId, req.user.userId);
 
     return res.status(200).json({
       success: true,
@@ -173,7 +203,9 @@ export async function deleteScheduleController(
     const message =
       error instanceof Error ? error.message : "Terjadi kesalahan";
 
-    const status = message.includes("tidak ditemukan") ? 404 : 500;
+    const status = message.includes("tidak ditemukan")
+      ? 404
+      : 500;
 
     return res.status(status).json({
       success: false,

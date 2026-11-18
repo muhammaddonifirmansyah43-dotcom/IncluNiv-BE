@@ -81,6 +81,7 @@ export const UserScalarFieldEnum = {
   id: 'id',
   fullName: 'fullName',
   email: 'email',
+  phoneNumber: 'phoneNumber',
   passwordHash: 'passwordHash',
   role: 'role',
   photoUrl: 'photoUrl',
@@ -96,6 +97,7 @@ export const StudentScalarFieldEnum = {
   userId: 'userId',
   studentCode: 'studentCode',
   department: 'department',
+  disabilityType: 'disabilityType',
   supportNeeds: 'supportNeeds'
 } as const
 
@@ -198,6 +200,7 @@ export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 export const UserOrderByRelevanceFieldEnum = {
   fullName: 'fullName',
   email: 'email',
+  phoneNumber: 'phoneNumber',
   passwordHash: 'passwordHash',
   photoUrl: 'photoUrl'
 } as const
@@ -208,6 +211,7 @@ export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnu
 export const StudentOrderByRelevanceFieldEnum = {
   studentCode: 'studentCode',
   department: 'department',
+  disabilityType: 'disabilityType',
   supportNeeds: 'supportNeeds'
 } as const
 

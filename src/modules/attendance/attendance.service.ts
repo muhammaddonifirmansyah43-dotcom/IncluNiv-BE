@@ -1,6 +1,51 @@
-﻿import { prisma } from "../../config/prisma";
 
-// Mentor mengonfirmasi bahwa pendampingan telah selesai
+import { prisma } from "../../config/prisma";
+
+// Data relasi yang ditampilkan pada riwayat pelaksanaan.
+const attendanceSelect = {
+  id: true,
+  assignmentId: true,
+  confirmedAt: true,
+  notes: true,
+  assignment: {
+    select: {
+      id: true,
+      startAt: true,
+      endAt: true,
+      location: true,
+      status: true,
+      student: {
+        select: {
+          id: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              photoUrl: true,
+            },
+          },
+        },
+      },
+      mentor: {
+        select: {
+          id: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              photoUrl: true,
+            },
+          },
+        },
+      },
+    },
+  },
+} as const;
+
+// =====================================================
+// 1. KONFIRMASI KEHADIRAN OLEH MENTOR
+// =====================================================
+
 export async function confirmAttendance(
   assignmentId: number,
   userId: number,
@@ -63,7 +108,9 @@ export async function confirmAttendance(
     });
 
     if (updatedAssignment.count === 0) {
-      throw new Error("Status penugasan telah berubah, silakan coba lagi");
+      throw new Error(
+        "Status penugasan telah berubah, silakan coba lagi"
+      );
     }
 
     return {
@@ -75,40 +122,84 @@ export async function confirmAttendance(
   });
 }
 
-// Melihat data konfirmasi kehadiran milik mentor yang login
-export async function getMentorAttendanceHistory(userId: number) {
-  const mentor = await prisma.mentor.findUnique({
-    where: { userId },
-  });
+// =====================================================
+// 2. RIWAYAT SELURUH PELAKSANAAN (ADMIN)
+// =====================================================
 
-  if (!mentor) {
-    throw new Error("Data pendamping tidak ditemukan");
-  }
-
+export const getAllAttendanceHistory = async () => {
   return prisma.attendance.findMany({
     where: {
       assignment: {
-        mentorId: mentor.id,
+        status: "COMPLETED",
       },
     },
-    include: {
-      assignment: {
-        include: {
-          student: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  fullName: true,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
+    select: attendanceSelect,
     orderBy: {
       confirmedAt: "desc",
     },
   });
-}
+};
+
+// =====================================================
+// 3. DETAIL RIWAYAT (ADMIN)
+// =====================================================
+
+export const getAttendanceHistoryById = async (
+  attendanceId: number
+) => {
+  return prisma.attendance.findFirst({
+    where: {
+      id: attendanceId,
+      assignment: {
+        status: "COMPLETED",
+      },
+    },
+    select: attendanceSelect,
+  });
+};
+
+// =====================================================
+// 4. RIWAYAT MAHASISWA
+// =====================================================
+
+export const getStudentAttendanceHistory = async (
+  userId: number
+) => {
+  return prisma.attendance.findMany({
+    where: {
+      assignment: {
+        status: "COMPLETED",
+        student: {
+          userId,
+        },
+      },
+    },
+    select: attendanceSelect,
+    orderBy: {
+      confirmedAt: "desc",
+    },
+  });
+};
+
+// =====================================================
+// 5. RIWAYAT PENDAMPING
+// =====================================================
+
+export const getMentorAttendanceHistory = async (
+  userId: number
+) => {
+  return prisma.attendance.findMany({
+    where: {
+      assignment: {
+        status: "COMPLETED",
+        mentor: {
+          userId,
+        },
+      },
+    },
+    select: attendanceSelect,
+    orderBy: {
+      confirmedAt: "desc",
+    },
+  });
+};

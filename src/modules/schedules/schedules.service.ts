@@ -1,13 +1,24 @@
-﻿
 import { prisma } from "../../config/prisma";
 
-interface ScheduleInput {
+export interface CreateScheduleInput {
   courseName: string;
   dayOfWeek: number;
   startTime: string;
   endTime: string;
   location?: string | null;
 }
+
+type ScheduleInput = CreateScheduleInput;
+
+const scheduleSelect = {
+  id: true,
+  courseName: true,
+  dayOfWeek: true,
+  startTime: true,
+  endTime: true,
+  location: true,
+  createdAt: true,
+} as const;
 
 function validateSchedule(data: ScheduleInput) {
   if (!data.courseName || !data.courseName.trim()) {
@@ -19,7 +30,7 @@ function validateSchedule(data: ScheduleInput) {
     data.dayOfWeek < 0 ||
     data.dayOfWeek > 6
   ) {
-    throw new Error("Hari harus berupa angka 0 sampai 6");
+    throw new Error("Hari harus berupa angka 0 sampai 6 (Minggu sampai Sabtu)");
   }
 
   const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -34,6 +45,14 @@ function validateSchedule(data: ScheduleInput) {
   if (data.startTime >= data.endTime) {
     throw new Error("Jam selesai harus setelah jam mulai");
   }
+
+  if (
+    data.location !== undefined &&
+    data.location !== null &&
+    typeof data.location !== "string"
+  ) {
+    throw new Error("Lokasi harus berupa teks");
+  }
 }
 
 async function checkScheduleConflict(
@@ -45,7 +64,9 @@ async function checkScheduleConflict(
     where: {
       userId,
       dayOfWeek: data.dayOfWeek,
-      ...(excludeId !== undefined ? { id: { not: excludeId } } : {}),
+      ...(excludeId !== undefined
+        ? { id: { not: excludeId } }
+        : {}),
       startTime: {
         lt: data.endTime,
       },
@@ -76,6 +97,7 @@ export async function createSchedule(
       endTime: data.endTime,
       location: data.location?.trim() || null,
     },
+    select: scheduleSelect,
   });
 }
 
@@ -86,6 +108,7 @@ export async function getMySchedules(userId: number) {
       { dayOfWeek: "asc" },
       { startTime: "asc" },
     ],
+    select: scheduleSelect,
   });
 }
 
@@ -128,6 +151,7 @@ export async function updateSchedule(
       endTime: updatedData.endTime,
       location: updatedData.location?.trim() || null,
     },
+    select: scheduleSelect,
   });
 }
 
@@ -148,5 +172,6 @@ export async function deleteSchedule(
 
   return prisma.classSchedule.delete({
     where: { id: scheduleId },
+    select: scheduleSelect,
   });
 }

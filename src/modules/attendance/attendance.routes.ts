@@ -1,29 +1,64 @@
-﻿import { Router } from "express";
+
+import { Router } from "express";
+import {
+  authenticate,
+  authorize,
+} from "../../middleware/auth.middleware";
+
 import {
   confirmAttendanceController,
   getMentorAttendanceHistoryController,
+  getAllAttendance,
+  getAttendanceDetail,
+  getMyStudentAttendance,
+  getMyMentorAttendance,
 } from "./attendance.controller";
-import {
-  authenticateToken,
-  authorizeRole,
-} from "../../middleware/auth.middleware";
 
 const router = Router();
 
-router.use(authenticateToken);
+// Semua endpoint membutuhkan autentikasi.
+router.use(authenticate);
 
-// Mentor mengonfirmasi pendampingan yang sudah selesai
+// Mentor mengonfirmasi pendampingan yang sudah selesai.
 router.post(
   "/:assignmentId/confirm",
-  authorizeRole("MENTOR"),
+  authorize("MENTOR"),
   confirmAttendanceController
 );
 
-// Mentor melihat riwayat konfirmasi kehadirannya
+// Riwayat konfirmasi kehadiran mentor.
 router.get(
   "/my-history",
-  authorizeRole("MENTOR"),
+  authorize("MENTOR"),
   getMentorAttendanceHistoryController
+);
+
+// Riwayat mahasiswa yang sedang login.
+router.get(
+  "/student/me",
+  authorize("STUDENT"),
+  getMyStudentAttendance
+);
+
+// Riwayat pendamping yang sedang login.
+router.get(
+  "/mentor/me",
+  authorize("MENTOR"),
+  getMyMentorAttendance
+);
+
+// Seluruh riwayat pelaksanaan untuk admin.
+router.get(
+  "/",
+  authorize("ADMIN"),
+  getAllAttendance
+);
+
+// Detail riwayat untuk admin.
+router.get(
+  "/:id",
+  authorize("ADMIN"),
+  getAttendanceDetail
 );
 
 export default router;
