@@ -1,20 +1,28 @@
 
 import express from "express";
 import cors from "cors";
+import path from "path";
+import multer from "multer";
 
 import healthRoutes from "./routes/health.routes";
+import authRoutes from "./modules/auth/auth.routes";
+import permissionsRoutes from "./modules/permissions/permissions.routes";
+import assignmentsRoutes from "./modules/assignments/assignments.routes";
+import attendanceRoutes from "./modules/attendance/attendance.routes";
+import schedulesRoutes from "./modules/schedules/schedules.routes";
 
 import dashboardRoutes from "./modules/dashboard/dashboard.routes";
-import attendanceRoutes from "./modules/attendance/attendance.routes";
 import recapsRoutes from "./modules/recaps/recaps.routes";
-
 import studentRoutes from "./modules/students/students.routes";
-import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import mentorsRoutes from "./modules/mentors/mentors.routes";
 import studentsAdminRoutes from "./modules/students/students.admin.routes";
 import mentorsAdminRoutes from "./modules/mentors/mentors.admin.routes";
 import notificationsRoutes from "./modules/notifications/notifications.routes";
 
+import {
+  errorHandler as globalErrorHandler,
+  notFoundHandler,
+} from "./middleware/errorHandler";
 
 const app = express();
 
@@ -22,6 +30,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Static file untuk foto profil
+app.use(
+  "/uploads",
+  express.static(path.join(process.cwd(), "uploads"))
+);
 
 // Route utama
 app.get("/", (_req, res) => {
@@ -34,29 +48,70 @@ app.get("/", (_req, res) => {
 // Health Check
 app.use("/api/health", healthRoutes);
 
+// Authentication
+app.use("/api/auth", authRoutes);
 
-  // Dashboard Admin
-  app.use("/api/dashboard", dashboardRoutes);
+// Permissions
+app.use("/api/permissions", permissionsRoutes);
 
-  // Riwayat Pelaksanaan
-  app.use("/api/attendance", attendanceRoutes);
+// Assignments
+app.use("/api/assignments", assignmentsRoutes);
 
-  // Rekap Volunteer
-  app.use("/api/recaps", recapsRoutes);
+// Attendance
+app.use("/api/attendance", attendanceRoutes);
 
-  // Modul Students
-  app.use("/api/students", studentRoutes);
+// Schedules
+app.use("/api/schedules", schedulesRoutes);
 
-  // Modul Mentors
-  app.use("/api/mentors", mentorsRoutes);
+// Dashboard Admin
+app.use("/api/dashboard", dashboardRoutes);
 
-  // Modul Notifications
-  app.use("/api/notifications", notificationsRoutes);
+// Recaps
+app.use("/api/recaps", recapsRoutes);
 
-  // Penanganan error harus di bagian paling bawah
-  // setelah seluruh route didaftarkan
-  app.use(notFoundHandler);
-  app.use(errorHandler);
+// Students
+app.use("/api/students", studentRoutes);
 
-  export default app;
+// Admin Students
+app.use("/api/admin/students", studentsAdminRoutes);
 
+// Mentors
+app.use("/api/mentors", mentorsRoutes);
+
+// Admin Mentors
+app.use("/api/admin/mentors", mentorsAdminRoutes);
+
+// Notifications
+app.use("/api/notifications", notificationsRoutes);
+
+// Not Found Handler
+app.use(notFoundHandler);
+
+// Global Error Handler
+app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err instanceof multer.MulterError) {
+    const message =
+      err.code === "LIMIT_FILE_SIZE"
+        ? "Ukuran foto maksimal 5 MB"
+        : "Terjadi kesalahan saat mengunggah foto";
+
+    return res.status(400).json({
+      success: false,
+      message,
+    });
+  }
+
+  if (
+    err instanceof Error &&
+    err.message === "Format foto harus JPG, PNG, atau WEBP"
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+
+  return globalErrorHandler(err, req, res, next);
+});
+
+export default app;

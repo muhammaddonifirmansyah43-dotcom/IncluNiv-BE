@@ -1,12 +1,7 @@
 
 import { prisma } from "../../config/prisma";
 
-// =====================================================
-// RELASI RIWAYAT PELAKSANAAN
-// =====================================================
-
-// Hanya mengambil kolom yang diperlukan.
-// Tidak mengambil passwordHash atau data sensitif lain.
+// Data relasi yang ditampilkan pada riwayat pelaksanaan.
 const attendanceSelect = {
   id: true,
   assignmentId: true,
@@ -48,7 +43,87 @@ const attendanceSelect = {
 } as const;
 
 // =====================================================
-// 1. RIWAYAT SELURUH PELAKSANAAN (ADMIN)
+// 1. KONFIRMASI KEHADIRAN OLEH MENTOR
+// =====================================================
+
+export async function confirmAttendance(
+  assignmentId: number,
+  userId: number,
+  notes?: string
+) {
+  if (!Number.isInteger(assignmentId) || assignmentId <= 0) {
+    throw new Error("ID penugasan tidak valid");
+  }
+
+  const mentor = await prisma.mentor.findUnique({
+    where: { userId },
+  });
+
+  if (!mentor) {
+    throw new Error("Data pendamping tidak ditemukan");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const assignment = await tx.assignment.findFirst({
+      where: {
+        id: assignmentId,
+        mentorId: mentor.id,
+      },
+    });
+
+    if (!assignment) {
+      throw new Error("Penugasan tidak ditemukan atau bukan milik Anda");
+    }
+
+    if (!["ACCEPTED", "ONGOING"].includes(assignment.status)) {
+      throw new Error(
+        "Penugasan belum diterima atau sudah diselesaikan"
+      );
+    }
+
+    const existingAttendance = await tx.attendance.findUnique({
+      where: { assignmentId },
+    });
+
+    if (existingAttendance) {
+      throw new Error("Konfirmasi kehadiran sudah dilakukan");
+    }
+
+    const attendance = await tx.attendance.create({
+      data: {
+        assignmentId,
+        notes: notes?.trim() || null,
+      },
+    });
+
+    const updatedAssignment = await tx.assignment.updateMany({
+      where: {
+        id: assignmentId,
+        mentorId: mentor.id,
+        status: assignment.status,
+      },
+      data: {
+        status: "COMPLETED",
+      },
+    });
+
+    if (updatedAssignment.count === 0) {
+      throw new Error(
+        "Status penugasan telah berubah, silakan coba lagi"
+      );
+    }
+
+    return {
+      attendance,
+      assignment: await tx.assignment.findUnique({
+        where: { id: assignmentId },
+      }),
+    };
+  });
+}
+
+// =====================================================
+// 2. RIWAYAT SELURUH PELAKSANAAN (ADMIN)
 // =====================================================
 
 export const getAllAttendanceHistory = async () => {
@@ -66,7 +141,7 @@ export const getAllAttendanceHistory = async () => {
 };
 
 // =====================================================
-// 2. DETAIL RIWAYAT BERDASARKAN ID
+// 3. DETAIL RIWAYAT (ADMIN)
 // =====================================================
 
 export const getAttendanceHistoryById = async (
@@ -84,7 +159,7 @@ export const getAttendanceHistoryById = async (
 };
 
 // =====================================================
-// 3. RIWAYAT MAHASISWA (USER ID)
+// 4. RIWAYAT MAHASISWA
 // =====================================================
 
 export const getStudentAttendanceHistory = async (
@@ -107,7 +182,7 @@ export const getStudentAttendanceHistory = async (
 };
 
 // =====================================================
-// 4. RIWAYAT PENDAMPING (USER ID)
+// 5. RIWAYAT PENDAMPING
 // =====================================================
 
 export const getMentorAttendanceHistory = async (

@@ -1,4 +1,3 @@
-
 import type {
   Request,
   Response,
@@ -9,56 +8,49 @@ import { prisma } from "../config/prisma";
 
 type UserRole = "STUDENT" | "MENTOR" | "ADMIN";
 
-export type AuthUser = {
+interface AuthPayload {
   id: number;
+  userId: number;
+  email: string;
   role: UserRole;
-};
-
-type AuthRequest = Request & {
-  user?: AuthUser;
-};
-
-function isJwtPayload(
-  value: string | JwtPayload
-): value is JwtPayload {
-  return typeof value !== "string";
 }
 
-// Memastikan pengguna memiliki JWT yang valid.
-export async function authenticate(
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AuthPayload;
+    }
+  }
+}
+
+// Memverifikasi JWT dan mengambil identitas pengguna dari database.
+export async function authenticateToken(
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   const authorization = req.headers.authorization;
+  const secret = process.env.JWT_SECRET;
 
-  if (
-    !authorization ||
-    !/^Bearer\s+\S+$/i.test(authorization)
-  ) {
+  if (!authorization || !/^Bearer\s+\S+$/i.test(authorization)) {
     res.status(401).json({
       success: false,
-      message: "Token autentikasi diperlukan.",
+      message: "Token autentikasi tidak ditemukan",
     });
     return;
   }
-
-  const secret = process.env.JWT_SECRET;
 
   if (!secret) {
     console.error("JWT_SECRET belum dikonfigurasi.");
 
     res.status(503).json({
       success: false,
-      message: "Layanan autentikasi belum siap.",
+      message: "Layanan autentikasi belum siap",
     });
     return;
   }
 
-  const token = authorization.replace(
-    /^Bearer\s+/i,
-    ""
-  );
+  const token = authorization.replace(/^Bearer\s+/i, "");
 
   try {
     const decoded = jwt.verify(token, secret, {
@@ -66,35 +58,25 @@ export async function authenticate(
     });
 
     if (
-      !isJwtPayload(decoded) ||
-      typeof decoded.sub !== "string" ||
-      !/^[1-9]\d*$/.test(decoded.sub)
+      typeof decoded === "string" ||
+      typeof decoded.userId !== "number" ||
+      !Number.isSafeInteger(decoded.userId) ||
+      decoded.userId <= 0
     ) {
       res.status(401).json({
         success: false,
-        message: "Identitas token tidak valid.",
+        message: "Format token tidak valid",
       });
       return;
     }
 
-    const userId = Number(decoded.sub);
-
-    if (!Number.isSafeInteger(userId)) {
-      res.status(401).json({
-        success: false,
-        message: "Identitas pengguna tidak valid.",
-      });
-      return;
-    }
-
-    // Ambil role aktual dari database,
-    // bukan mempercayai role dari token saja.
     const user = await prisma.user.findUnique({
       where: {
-        id: userId,
+        id: decoded.userId,
       },
       select: {
         id: true,
+        email: true,
         role: true,
       },
     });
@@ -102,56 +84,57 @@ export async function authenticate(
     if (!user) {
       res.status(401).json({
         success: false,
-        message: "Akun tidak ditemukan.",
+        message: "Akun tidak ditemukan",
       });
       return;
     }
 
-    (req as AuthRequest).user = {
+    req.user = {
       id: user.id,
+      userId: user.id,
+      email: user.email,
       role: user.role,
     };
 
     next();
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
+    if (
+      error instanceof jwt.JsonWebTokenError ||
+      error instanceof jwt.TokenExpiredError
+    ) {
       res.status(401).json({
         success: false,
-        message: "Token tidak valid atau kedaluwarsa.",
+        message: "Token tidak valid atau sudah kedaluwarsa",
       });
       return;
     }
 
-    console.error("Authentication error:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Gagal memverifikasi autentikasi.",
-    });
+    next(error);
   }
 }
 
-// Memastikan role memiliki izin mengakses endpoint.
-export function authorize(...roles: UserRole[]) {
+// Alias agar kompatibel dengan modul dari branch main.
+export const authenticate = authenticateToken;
+
+// Memeriksa hak akses berdasarkan role.
+export function authorizeRole(...allowedRoles: UserRole[]) {
   return (
     req: Request,
     res: Response,
     next: NextFunction
   ): void => {
-    const user = (req as AuthRequest).user;
-
-    if (!user) {
+    if (!req.user) {
       res.status(401).json({
         success: false,
-        message: "Silakan login terlebih dahulu.",
+        message: "Autentikasi diperlukan",
       });
       return;
     }
 
-    if (!roles.includes(user.role)) {
+    if (!allowedRoles.includes(req.user.role)) {
       res.status(403).json({
         success: false,
-        message: "Anda tidak memiliki akses.",
+        message: "Anda tidak memiliki izin untuk mengakses fitur ini",
       });
       return;
     }
@@ -159,3 +142,6 @@ export function authorize(...roles: UserRole[]) {
     next();
   };
 }
+
+// Alias agar kompatibel dengan modul dari branch main.
+export const authorize = authorizeRole;

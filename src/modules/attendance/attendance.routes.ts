@@ -1,12 +1,13 @@
 
 import { Router } from "express";
-
 import {
   authenticate,
   authorize,
 } from "../../middleware/auth.middleware";
 
 import {
+  confirmAttendanceController,
+  getMentorAttendanceHistoryController,
   getAllAttendance,
   getAttendanceDetail,
   getMyStudentAttendance,
@@ -15,8 +16,22 @@ import {
 
 const router = Router();
 
-// Semua endpoint membutuhkan login.
+// Semua endpoint membutuhkan autentikasi.
 router.use(authenticate);
+
+// Mentor mengonfirmasi pendampingan yang sudah selesai.
+router.post(
+  "/:assignmentId/confirm",
+  authorize("MENTOR"),
+  confirmAttendanceController
+);
+
+// Riwayat konfirmasi kehadiran mentor.
+router.get(
+  "/my-history",
+  authorize("MENTOR"),
+  getMentorAttendanceHistoryController
+);
 
 // Riwayat mahasiswa yang sedang login.
 router.get(
