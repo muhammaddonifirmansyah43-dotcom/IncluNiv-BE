@@ -221,7 +221,7 @@ export type ClassScheduleGroupByOutputType = {
   _max: ClassScheduleMaxAggregateOutputType | null
 }
 
-export type GetClassScheduleGroupByPayload<T extends ClassScheduleGroupByArgs> = Prisma.PrismaPromise<
+type GetClassScheduleGroupByPayload<T extends ClassScheduleGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<ClassScheduleGroupByOutputType, T['by']> &
       {
@@ -1203,11 +1203,6 @@ export type ClassScheduleFindManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Skip the first `n` ClassSchedules.
    */
   skip?: number
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   * 
-   * Filter by unique combinations of ClassSchedules.
-   */
   distinct?: Prisma.ClassScheduleScalarFieldEnum | Prisma.ClassScheduleScalarFieldEnum[]
 }
 
