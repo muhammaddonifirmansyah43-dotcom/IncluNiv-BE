@@ -1,10 +1,32 @@
+
 import { Router } from "express";
+
 import { authenticate } from "../../middleware/authGuard";
-import { getMyNotifications } from "./notifications.controller";
+
+import {
+  getMyNotifications,
+  markMyNotificationAsRead,
+  markMyNotificationAsUnread,
+} from "./notifications.controller";
 
 const router = Router();
 
-// Semua role yang login boleh melihat notifikasinya sendiri.
-router.get("/", authenticate, getMyNotifications);
+// Semua API notifikasi membutuhkan JWT
+router.use(authenticate);
+
+// API 1: Daftar notifikasi
+router.get("/", getMyNotifications);
+
+// API 2: Tandai sudah dibaca
+router.patch(
+  "/:id/read",
+  markMyNotificationAsRead
+);
+
+// API 3: Tandai belum dibaca
+router.patch(
+  "/:id/unread",
+  markMyNotificationAsUnread
+);
 
 export default router;
